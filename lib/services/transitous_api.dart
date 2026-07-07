@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
 import '../models/departure.dart';
+import '../models/itinerary.dart';
+import '../models/place_suggestion.dart';
 import '../models/stop.dart';
 import '../models/vehicle.dart';
 
@@ -114,6 +116,56 @@ class TransitousApi {
         modes: const [],
       );
     }).toList();
+  }
+
+  /// Calcule des itinéraires de [from] vers [to] (transports en commun +
+  /// marche), triés par heure d'arrivée. [rentalAllowed] autorise le
+  /// vélo en libre-service pour le premier/dernier kilomètre.
+  Future<List<Itinerary>> planTrip({
+    required LatLng from,
+    required LatLng to,
+    DateTime? time,
+    bool arriveBy = false,
+    bool rentalAllowed = false,
+  }) async {
+    final params = <String, String>{
+      'fromPlace': '${from.latitude},${from.longitude}',
+      'toPlace': '${to.latitude},${to.longitude}',
+      'arriveBy': '$arriveBy',
+      'detailedTransfers': 'true',
+      if (time != null) 'time': time.toUtc().toIso8601String(),
+      if (rentalAllowed) 'preTransitModes': 'WALK,RENTAL',
+      if (rentalAllowed) 'postTransitModes': 'WALK,RENTAL',
+    };
+    final uri = Uri.https(_baseUrl, '/api/v1/plan', params);
+    final body = await _get(uri);
+    final json = jsonDecode(body) as Map<String, dynamic>;
+
+    final itineraries = <Itinerary>[];
+    for (final key in const ['itineraries', 'direct']) {
+      final list = json[key] as List<dynamic>? ?? const [];
+      for (final e in list) {
+        itineraries.add(Itinerary.fromJson(e as Map<String, dynamic>));
+      }
+    }
+    itineraries.sort((a, b) => a.endTime.compareTo(b.endTime));
+    return itineraries;
+  }
+
+  /// Recherche générale de lieux (adresses, points d'intérêt et arrêts)
+  /// pour choisir une destination.
+  Future<List<PlaceSuggestion>> geocodePlaces(String query, {LatLng? near}) async {
+    final params = <String, String>{'text': query};
+    if (near != null) {
+      params['place'] = '${near.latitude},${near.longitude}';
+      params['placeBias'] = '1.5';
+    }
+    final uri = Uri.https(_baseUrl, '/api/v1/geocode', params);
+    final body = await _get(uri);
+    final list = jsonDecode(body) as List<dynamic>;
+    return list
+        .map((e) => PlaceSuggestion.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<String> _get(Uri uri) async {

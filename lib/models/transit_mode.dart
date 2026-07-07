@@ -7,6 +7,7 @@ enum TransitMode {
   subway('SUBWAY', 'Métro', Icons.subway, Color(0xFFE53935)),
   tram('TRAM', 'Tram', Icons.tram, Color(0xFF43A047)),
   rail('RAIL', 'Train', Icons.train, Color(0xFF5E35B1)),
+  suburban('SUBURBAN', 'RER', Icons.directions_transit, Color(0xFF00838F)),
   regionalRail('REGIONAL_RAIL', 'TER', Icons.directions_railway,
       Color(0xFF3949AB)),
   regionalFastRail('REGIONAL_FAST_RAIL', 'Train rapide',
@@ -20,9 +21,13 @@ enum TransitMode {
   ferry('FERRY', 'Ferry', Icons.directions_boat, Color(0xFF00ACC1)),
   airplane('AIRPLANE', 'Avion', Icons.flight, Color(0xFF546E7A)),
   funicular('FUNICULAR', 'Funiculaire', Icons.terrain, Color(0xFF6D4C41)),
-  cableCar('CABLE_CAR', 'Téléphérique', Icons.airline_seat_recline_extra,
-      Color(0xFF6D4C41)),
+  aerialLift('AERIAL_LIFT', 'Téléphérique', Icons.cable, Color(0xFF6D4C41)),
+  cableCar('CABLE_CAR', 'Téléphérique', Icons.cable, Color(0xFF6D4C41)),
   metro('METRO', 'Métro', Icons.subway, Color(0xFFE53935)),
+  walk('WALK', 'Marche', Icons.directions_walk, Color(0xFF616161)),
+  bike('BIKE', 'Vélo', Icons.directions_bike, Color(0xFF00897B)),
+  rental('RENTAL', 'Vélo partagé', Icons.pedal_bike, Color(0xFF00897B)),
+  car('CAR', 'Voiture', Icons.directions_car, Color(0xFF455A64)),
   other('OTHER', 'Transport', Icons.commute, Color(0xFF757575));
 
   final String apiValue;

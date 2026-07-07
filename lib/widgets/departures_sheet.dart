@@ -1,16 +1,41 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../models/departure.dart';
 import '../models/transit_mode.dart';
 import '../state/transit_state.dart';
+import '../utils/color_utils.dart';
 import 'mode_badge.dart';
 
 /// Panneau inférieur affichant les prochains départs de l'arrêt sélectionné.
-class DeparturesSheet extends StatelessWidget {
+class DeparturesSheet extends StatefulWidget {
   final ScrollController scrollController;
 
   const DeparturesSheet({super.key, required this.scrollController});
+
+  @override
+  State<DeparturesSheet> createState() => _DeparturesSheetState();
+}
+
+class _DeparturesSheetState extends State<DeparturesSheet> {
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +102,14 @@ class DeparturesSheet extends StatelessWidget {
                     ],
                   ),
                 ),
+                FilledButton.tonalIcon(
+                  onPressed: () => context.read<TransitState>().planTripTo(
+                        LatLng(stop.lat, stop.lon),
+                        stop.name,
+                      ),
+                  icon: const Icon(Icons.directions, size: 18),
+                  label: const Text('Itinéraire'),
+                ),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => context.read<TransitState>().clearSelection(),
@@ -102,7 +135,7 @@ class DeparturesSheet extends StatelessWidget {
                         ),
                       )
                     : ListView.separated(
-                        controller: scrollController,
+                        controller: widget.scrollController,
                         padding: const EdgeInsets.only(bottom: 24),
                         itemCount: state.departures.length,
                         separatorBuilder: (_, _) =>
@@ -129,12 +162,8 @@ class _DepartureTile extends StatelessWidget {
     final now = DateTime.now();
     final minutes = departure.minutesUntil(now);
 
-    final lineColor = departure.routeColor != null
-        ? Color(int.parse('FF${departure.routeColor}', radix: 16))
-        : mode.color;
-    final lineTextColor = departure.routeTextColor != null
-        ? Color(int.parse('FF${departure.routeTextColor}', radix: 16))
-        : Colors.white;
+    final lineColor = hexColor(departure.routeColor, mode.color);
+    final lineTextColor = hexColor(departure.routeTextColor, Colors.white);
 
     final String timeLabel;
     if (departure.cancelled) {

@@ -1,3 +1,5 @@
+import 'stop.dart';
+
 /// Un départ (passage) à un arrêt, avec informations temps réel.
 class Departure {
   final String tripId;
@@ -64,4 +66,17 @@ class Departure {
     final cleaned = hex.replaceAll('#', '');
     return cleaned.length == 6 ? cleaned : null;
   }
+}
+
+/// Un départ associé à l'arrêt d'où il part, pour la liste « autour de moi ».
+class NearbyDeparture {
+  final Departure departure;
+  final Stop stop;
+  final double distanceMeters;
+
+  const NearbyDeparture({
+    required this.departure,
+    required this.stop,
+    required this.distanceMeters,
+  });
 }
